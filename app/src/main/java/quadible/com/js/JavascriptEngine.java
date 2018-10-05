@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.Set;
 
 import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableObserver;
 
 public class JavascriptEngine {
 
@@ -22,6 +25,8 @@ public class JavascriptEngine {
 
     private final IQueryExecutor mQueryExecutor;
 
+    private final JsDialogPublisher mDialogPublisher = new JsDialogPublisher();
+
     public JavascriptEngine(
             String scriptName, String script, String functionName, IQueryExecutor queryExecutor) {
         mScriptName = scriptName;
@@ -30,14 +35,18 @@ public class JavascriptEngine {
         mQueryExecutor = queryExecutor;
     }
 
-    public Single<ScriptingResult> execute(Arguments arguments) {
-        return Single.fromCallable(() -> executeImp(arguments));
+    public Single<ScriptingResult> execute(Arguments arguments, DisposableObserver<String> alertObserver) {
+        return Single.fromCallable(() -> executeImp(arguments, alertObserver));
     }
 
-    private ScriptingResult executeImp(Arguments arguments) {
+    private ScriptingResult executeImp(Arguments arguments, DisposableObserver<String> alertObserver) {
         Context cx = Context.enter();
 
+        CompositeDisposable disposables = new CompositeDisposable();
+        disposables.add(alertObserver);
         try {
+            mDialogPublisher.observe().observeOn(AndroidSchedulers.mainThread()).subscribeWith(alertObserver);
+
             //Init result object
             ScriptingResult.Builder result = new ScriptingResult.Builder();
 
@@ -61,19 +70,20 @@ public class JavascriptEngine {
             cx.setLanguageVersion(Context.VERSION_1_8);
 
             //we need the following line because of
-            // https://stackoverflow.com/questions/14454686/android-rhino-error-cant-load-this-type-of-class-file
+            //https://stackoverflow.com/questions/14454686/android-rhino-error-cant-load-this-type-of-class-file
             cx.setOptimizationLevel(-1);
 
-            // Initialize the standard objects (Object, Function, etc.)
-            // This must be done before scripts can be executed.
+            //Initialize the standard objects (Object, Function, etc.)
+            //This must be done before scripts can be executed.
             Scriptable scope = cx.initStandardObjects();
 
             //Inject instances of java objects to our script in order to let them be used by it.
             injectJavaObject(cx, scope, "result", result);
             injectJavaObject(cx, scope, "executor", mQueryExecutor);
+            injectJavaObject(cx, scope, "dialog", mDialogPublisher);
 
-            // Now we can evaluate a script. Let's create a new object
-            // using the object literal notation.
+            //Now we can evaluate a script. Let's create a new object
+            //using the object literal notation.
             cx.evaluateString(scope, mScript,
                     mScriptName + ": " + mFunction, 1, null);
 
@@ -96,6 +106,7 @@ public class JavascriptEngine {
         }
         finally {
             Context.exit();
+            disposables.dispose();
         }
     }
 
@@ -120,11 +131,11 @@ public class JavascriptEngine {
                 + "}"
                 + ""
                 + "function showAlert(msg) {"
-                + "result.alert(msg);"
+                + "dialog.publish(msg);"
                 + "}"
                 + ""
                 + "function showDialog(msg) {"
-                + "result.dialog(msg);"
+                + "dialog.publish(msg);"
                 + "}";
     }
 

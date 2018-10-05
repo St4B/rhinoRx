@@ -2,6 +2,7 @@ package quadible.com.js;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -47,13 +48,12 @@ public class MainActivity extends AppCompatActivity {
         trigger.setOnClickListener(view -> Observable.just(new Model.Builder().build())
                 .subscribeOn(Schedulers.newThread())
                 .map(mMapper::transform)
-                .flatMapSingle(mEngine::execute)
+                .flatMapSingle(arguments -> mEngine.execute(arguments, new AlertObserver()))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new MyObserver()));
     }
 
     public class MyObserver extends DisposableObserver<ScriptingResult> {
-
 
         @Override
         public void onNext(ScriptingResult result) {
@@ -70,4 +70,25 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onComplete() {}
     }
+
+    public class AlertObserver extends DisposableObserver<String> {
+
+        @Override
+        public void onNext(String msg) {
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("Title")
+                    .setMessage(msg)
+                    .setPositiveButton("Ok", null)
+                    .show();
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        public void onComplete() {}
+    }
+
 }
