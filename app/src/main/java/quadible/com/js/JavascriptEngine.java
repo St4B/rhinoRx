@@ -35,11 +35,11 @@ public class JavascriptEngine {
         mQueryExecutor = queryExecutor;
     }
 
-    public Single<ScriptingResult> execute(Arguments arguments, DisposableObserver<String> dialogObserver) {
+    public Single<ScriptingResult> execute(Arguments arguments, DisposableObserver<DialogDefinition> dialogObserver) {
         return Single.fromCallable(() -> executeImp(arguments, dialogObserver));
     }
 
-    private ScriptingResult executeImp(Arguments arguments, DisposableObserver<String> dialogObserver) {
+    private ScriptingResult executeImp(Arguments arguments, DisposableObserver<DialogDefinition> dialogObserver) {
         Context cx = Context.enter();
 
         CompositeDisposable disposables = new CompositeDisposable();

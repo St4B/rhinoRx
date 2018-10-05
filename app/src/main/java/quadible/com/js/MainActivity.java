@@ -4,8 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -71,14 +69,15 @@ public class MainActivity extends AppCompatActivity {
         public void onComplete() {}
     }
 
-    public class JsDialogObserver extends DisposableObserver<String> {
+    public class JsDialogObserver extends DisposableObserver<DialogDefinition> {
 
         @Override
-        public void onNext(String msg) {
+        public void onNext(DialogDefinition definition) {
             new AlertDialog.Builder(MainActivity.this)
-                    .setTitle("Title")
-                    .setMessage(msg)
-                    .setPositiveButton("Ok", null)
+                    .setTitle(definition.getTitle())
+                    .setMessage(definition.getMessage())
+                    .setPositiveButton(definition.getPositiveButtonTitle(), null)
+                    .setNegativeButton(definition.getNegativeButtonTitle(), null)
                     .show();
         }
 
