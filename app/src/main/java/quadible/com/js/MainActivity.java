@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onError(Throwable e) {
-            Log.d(TAG, "onError() called with: e = [" + e + "]");
+            Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
         }
 
         @Override
