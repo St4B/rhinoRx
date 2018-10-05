@@ -130,11 +130,13 @@ public class JavascriptEngine {
                 + "return executor.query(select);"
                 + "}"
                 + ""
-                + "function showAlert(msg) {"
-                + "dialog.publish(msg);"
+                + "function showDialog(title, msg, positiveButton, negativeButton) {"
+                + "var pBtn = (positiveButton === undefined) ? null : positiveButton; "
+                + "var nBtn = (negativeButton === undefined) ? null : negativeButton; "
+                + "dialog.publish(title, msg, pBtn, nBtn);"
                 + "}"
                 + ""
-                + "function showDialog(msg) {"
+                + "function showAlert(msg) {"
                 + "dialog.publish(msg);"
                 + "}";
     }

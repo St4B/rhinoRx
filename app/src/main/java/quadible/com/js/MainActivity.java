@@ -21,10 +21,13 @@ public class MainActivity extends AppCompatActivity {
 
     private final String mScript =
             "function HeaderPropertyChanged(header) {"
-            + "header.put(\"loco\", \"modo\");"
-            + "header.put(\"active\", \"member\");"
-            + "showAlert(\"koukou!\");"
-            + "var data = query(\"select * from somewhere\");"
+            + "header.put('loco', 'modo');"
+            + "header.put('active', 'member');"
+            + "showDialog('koukou!');"
+            + "showDialog('Second', 'koukou!');"
+            + "showDialog('Third', 'koukou!', 'Ok');"
+            + "showDialog('Fourth', 'koukou!', 'Ok', 'Cancel');"
+            + "var data = query('select * from somewhere');"
             + "header.put(data[0][0], data[0][1]); "
             + "header.put(data[1][0], data[1][1]); "
             + "return true;"
