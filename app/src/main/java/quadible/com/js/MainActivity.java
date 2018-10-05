@@ -4,6 +4,10 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -39,22 +43,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Observable.just(new Model.Builder().build())
+        Button trigger = findViewById(R.id.btnTrigger);
+        trigger.setOnClickListener(view -> Observable.just(new Model.Builder().build())
                 .subscribeOn(Schedulers.newThread())
                 .map(mMapper::transform)
                 .flatMapSingle(mEngine::execute)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new MyObserver());
+                .subscribe(new MyObserver()));
     }
 
     public class MyObserver extends DisposableObserver<ScriptingResult> {
 
-        private String TAG = "St4B";
 
         @Override
         public void onNext(ScriptingResult result) {
-            Log.d(TAG, "onNext() called with: result = [" + result + "]");
-            Model model = mMapper.transform(result); //Do something with it bro! :D
+            Model model = mMapper.transform(result);
+            TextView text = findViewById(R.id.txt);
+            text.setText(model.toString());
         }
 
         @Override
@@ -63,8 +68,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onComplete() {
-            Log.d(TAG, "onComplete() called");
-        }
+        public void onComplete() {}
     }
 }

@@ -19,6 +19,14 @@ public class Model {
         return mLoco;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ": {" +
+                "\n\t\tmActive: " + mActive +
+                "\n\t\tmLoco: " + mLoco +
+                "\n}";
+    }
+
     public static final class Builder {
 
         private String mActive = "active";
