@@ -1,6 +1,6 @@
 package quadible.com.js;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public class ModelToArgumentsMapper {
 
@@ -13,7 +13,7 @@ public class ModelToArgumentsMapper {
     }
 
     public Model transform(ScriptingResult result) {
-        HashMap<String, String> values = result.getValues();
+        Map<String, String> values = result.getValues();
 
         return new Model.Builder()
                 .setActive(values.get("active"))

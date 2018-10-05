@@ -1,11 +1,13 @@
 package quadible.com.js;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 public final class ScriptingResult {
 
-    private final HashMap<String, String> mValues;
+    private final Map<String, String> mValues;
 
     private final ArrayList<String> mAlerts;
 
@@ -15,7 +17,15 @@ public final class ScriptingResult {
 
     private final boolean isDebugEnabled;
 
-    public HashMap<String, String> getValues() {
+    private ScriptingResult(Builder builder) {
+        mValues =  Collections.unmodifiableMap(builder.mValues);
+        mAlerts = builder.mAlerts;
+        mDialogs = builder.mDialogs;
+        applyValues = builder.applyValues;
+        isDebugEnabled = builder.isDebugEnabled;
+    }
+
+    public Map<String, String> getValues() {
         return mValues;
     }
 
@@ -33,14 +43,6 @@ public final class ScriptingResult {
 
     public boolean isDebugEnabled() {
         return isDebugEnabled;
-    }
-
-    private ScriptingResult(Builder builder) {
-        mValues =  builder.mValues;
-        mAlerts = builder.mAlerts;
-        mDialogs = builder.mDialogs;
-        applyValues = builder.applyValues;
-        isDebugEnabled = builder.isDebugEnabled;
     }
 
     public static final class Builder {
