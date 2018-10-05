@@ -12,7 +12,6 @@ import java.util.Set;
 
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
 
 public class JavascriptEngine {
@@ -24,8 +23,6 @@ public class JavascriptEngine {
     private final String mScript;
 
     private final IQueryExecutor mQueryExecutor;
-
-    private final JsDialogPublisher mDialogPublisher = new JsDialogPublisher();
 
     public JavascriptEngine(
             String scriptName, String script, String functionName, IQueryExecutor queryExecutor) {
@@ -42,10 +39,11 @@ public class JavascriptEngine {
     private ScriptingResult executeImp(Arguments arguments, DisposableObserver<DialogDefinition> dialogObserver) {
         Context cx = Context.enter();
 
-        CompositeDisposable disposables = new CompositeDisposable();
-        disposables.add(dialogObserver);
         try {
-            mDialogPublisher.observe()
+            JsDialogPublisher dialogPublisher = new JsDialogPublisher();
+
+            dialogPublisher.observe()
+                    //TODO execute in background???
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(dialogObserver);
 
@@ -82,7 +80,7 @@ public class JavascriptEngine {
             //Inject instances of java objects to our script in order to let them be used by it.
             injectJavaObject(cx, scope, "result", result);
             injectJavaObject(cx, scope, "executor", mQueryExecutor);
-            injectJavaObject(cx, scope, "dialog", mDialogPublisher);
+            injectJavaObject(cx, scope, "dialog", dialogPublisher);
 
             //Now we can evaluate a script. Let's create a new object
             //using the object literal notation.
@@ -90,7 +88,7 @@ public class JavascriptEngine {
                     mScriptName + ": " + mFunction, 1, null);
 
             //pass output values in order to be modified by script
-            //fixme maybe we should pass trigger too. Many times is useful to know what triggered the script
+            //TODO maybe we should pass trigger too. Many times is useful to know what triggered the script
             Object functionArgs[] = { outputValues };
             Function function = (Function)scope.get(mFunction, scope);
 
@@ -102,13 +100,13 @@ public class JavascriptEngine {
 
             result.applyValues(apply);
 
+            dialogPublisher.complete();
             return result.build();
         } catch (EvaluatorException e) {
             throw new RuntimeException(e.details() + ": " + e.lineSource());
         }
         finally {
             Context.exit();
-            disposables.dispose();
         }
     }
 

@@ -23,4 +23,8 @@ public class JsDialogPublisher {
         return mSubject;
     }
 
+    public void complete() {
+        mSubject.onComplete();
+    }
+
 }

@@ -87,7 +87,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onComplete() {}
+        public void onComplete() {
+            dispose();
+        }
     }
 
 }
