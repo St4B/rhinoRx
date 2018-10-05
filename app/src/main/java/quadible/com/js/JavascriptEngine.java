@@ -35,17 +35,19 @@ public class JavascriptEngine {
         mQueryExecutor = queryExecutor;
     }
 
-    public Single<ScriptingResult> execute(Arguments arguments, DisposableObserver<String> alertObserver) {
-        return Single.fromCallable(() -> executeImp(arguments, alertObserver));
+    public Single<ScriptingResult> execute(Arguments arguments, DisposableObserver<String> dialogObserver) {
+        return Single.fromCallable(() -> executeImp(arguments, dialogObserver));
     }
 
-    private ScriptingResult executeImp(Arguments arguments, DisposableObserver<String> alertObserver) {
+    private ScriptingResult executeImp(Arguments arguments, DisposableObserver<String> dialogObserver) {
         Context cx = Context.enter();
 
         CompositeDisposable disposables = new CompositeDisposable();
-        disposables.add(alertObserver);
+        disposables.add(dialogObserver);
         try {
-            mDialogPublisher.observe().observeOn(AndroidSchedulers.mainThread()).subscribeWith(alertObserver);
+            mDialogPublisher.observe()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(dialogObserver);
 
             //Init result object
             ScriptingResult.Builder result = new ScriptingResult.Builder();

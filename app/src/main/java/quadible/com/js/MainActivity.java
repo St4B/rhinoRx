@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         trigger.setOnClickListener(view -> Observable.just(new Model.Builder().build())
                 .subscribeOn(Schedulers.newThread())
                 .map(mMapper::transform)
-                .flatMapSingle(arguments -> mEngine.execute(arguments, new AlertObserver()))
+                .flatMapSingle(arguments -> mEngine.execute(arguments, new JsDialogObserver()))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new MyObserver()));
     }
@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         public void onComplete() {}
     }
 
-    public class AlertObserver extends DisposableObserver<String> {
+    public class JsDialogObserver extends DisposableObserver<String> {
 
         @Override
         public void onNext(String msg) {
