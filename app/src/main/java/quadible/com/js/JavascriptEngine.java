@@ -69,19 +69,8 @@ public class JavascriptEngine {
             Scriptable scope = cx.initStandardObjects();
 
             //Inject instances of java objects to our script in order to let them be used by it.
-            //Inject our ScriptingResult.Builder. In the script is going to have the name result.
-            //The we can use it like we were going to do in Java, but we are going to wrap it with
-            //a JS function in order to use it. By doing that we hide the implementation from the script
-            WrapFactory wrapFactory = cx.getWrapFactory();
-            Object wrappedResult = wrapFactory.wrap(cx, scope, result, ScriptingResult.Builder.class);
-            scope.put("result", scope, wrappedResult);
-
-            //Inject our IQueryExecutor. In the script is going to have the name executor.
-            //The we can use it like we were going to do in Java, but we are going to wrap it with
-            //a JS function in order to use it. By doing that we hide the implementation from the script
-            Object wrappedExecutor =
-                    wrapFactory.wrap(cx, scope, mQueryExecutor, mQueryExecutor.getClass());
-            scope.put("executor", scope, wrappedExecutor);
+            injectJavaObject(cx, scope, "result", result);
+            injectJavaObject(cx, scope, "executor", mQueryExecutor);
 
             // Now we can evaluate a script. Let's create a new object
             // using the object literal notation.
@@ -108,6 +97,20 @@ public class JavascriptEngine {
         finally {
             Context.exit();
         }
+    }
+
+    /**
+     * Inject a java object in the script. Then we can use it like we were going to do in Java.
+     * But we are going to wrap it with a JS function in order to use it. This means that the script
+     * would call this object by calling the wrapper function. By doing that we hide the
+     * implementation from the script.
+     * @param jsName The name of the script variable that is going to hold the injected object
+     * @param object The instance of the object that we want to inject
+     */
+    private void injectJavaObject(Context cx, Scriptable scope, String jsName,  Object object) {
+        WrapFactory wrapFactory = cx.getWrapFactory();
+        Object wrappedResult = wrapFactory.wrap(cx, scope, object, object.getClass());
+        scope.put(jsName, scope, wrappedResult);
     }
 
     private String addStandardMethods(String script) {
