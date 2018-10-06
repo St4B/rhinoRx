@@ -2,15 +2,12 @@ package quadible.com.js;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
                 .subscribe(new MyObserver()));
     }
 
-    public class MyObserver extends DisposableObserver<ScriptingResult> {
+    public class MyObserver extends JsExecutionObserver {
 
         @Override
         public void onNext(ScriptingResult result) {
@@ -50,14 +47,6 @@ public class MainActivity extends AppCompatActivity {
             text.setText(model.toString());
         }
 
-        @Override
-        public void onError(Throwable e) {
-            Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-
-        @Override
-        public void onComplete() {}
-    }
 
     public class JsDialogObserver extends DisposableObserver<DialogDefinition> {
 

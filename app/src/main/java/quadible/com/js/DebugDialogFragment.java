@@ -15,7 +15,8 @@ public class DebugDialogFragment extends DialogFragment {
 
     private static final String BUNDLE_KEY_METHOD = "method";
 
-    public static DebugDialogFragment newInstance(String script, String method) {
+    public static DebugDialogFragment newInstance(
+            String scriptName, String script, String method, Arguments arguments) {
         DebugDialogFragment fragment = new DebugDialogFragment();
         Bundle args = new Bundle();
         args.putString(BUNDLE_KEY_SCRIPT, script);
