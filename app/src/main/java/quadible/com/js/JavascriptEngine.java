@@ -36,17 +36,18 @@ public class JavascriptEngine {
         return Single.fromCallable(() -> executeImp(arguments, dialogObserver));
     }
 
-    private ScriptingResult executeImp(Arguments arguments, DisposableObserver<DialogDefinition> dialogObserver) {
+    private ScriptingResult executeImp(
+            Arguments arguments, DisposableObserver<DialogDefinition> dialogObserver) {
         Context cx = Context.enter();
 
+        JsDialogPublisher dialogPublisher = new JsDialogPublisher();
+
+        dialogPublisher.observe()
+                //TODO execute in background???
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(dialogObserver);
+
         try {
-            JsDialogPublisher dialogPublisher = new JsDialogPublisher();
-
-            dialogPublisher.observe()
-                    //TODO execute in background???
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(dialogObserver);
-
             //Init result object
             ScriptingResult.Builder result = new ScriptingResult.Builder();
 
@@ -100,12 +101,11 @@ public class JavascriptEngine {
 
             result.applyValues(apply);
 
-            dialogPublisher.complete();
             return result.build();
         } catch (EvaluatorException e) {
             throw new RuntimeException(e.details() + ": " + e.lineSource());
-        }
-        finally {
+        } finally {
+            dialogPublisher.complete();
             Context.exit();
         }
     }
@@ -115,17 +115,18 @@ public class JavascriptEngine {
      * But we are going to wrap it with a JS function in order to use it. This means that the script
      * would call this object by calling the wrapper function. By doing that we hide the
      * implementation from the script.
+     *
      * @param jsName The name of the script variable that is going to hold the injected object
      * @param object The instance of the object that we want to inject
      */
-    private void injectJavaObject(Context cx, Scriptable scope, String jsName,  Object object) {
+    private void injectJavaObject(Context cx, Scriptable scope, String jsName, Object object) {
         WrapFactory wrapFactory = cx.getWrapFactory();
         Object wrappedResult = wrapFactory.wrap(cx, scope, object, object.getClass());
         scope.put(jsName, scope, wrappedResult);
     }
 
     private String addStandardMethods(String script) {
-        return  script
+        return script
                 + "function query(select) {\n"
                 + "return executor.query(select);"
                 + "}"
