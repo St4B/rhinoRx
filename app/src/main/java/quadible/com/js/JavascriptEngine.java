@@ -32,7 +32,21 @@ public class JavascriptEngine {
         mQueryExecutor = queryExecutor;
     }
 
-    public Single<ScriptingResult> execute(Arguments arguments, DisposableObserver<DialogDefinition> dialogObserver) {
+    public Single<ScriptingResult> execute(
+            Arguments arguments, DisposableObserver<DialogDefinition> dialogObserver) {
+        return Single.just(mScript)
+                .flatMap(script -> {
+                    if (script.startsWith("debugger;")) {
+                        return Single.error(
+                                new DebugNeededException(mScriptName, mScript, mFunction, arguments));
+                    } else {
+                        return Single.fromCallable(() -> executeImp(arguments, dialogObserver));
+                    }
+                });
+    }
+
+    public Single<ScriptingResult> debug(
+            Arguments arguments, DisposableObserver<DialogDefinition> dialogObserver) {
         return Single.fromCallable(() -> executeImp(arguments, dialogObserver));
     }
 
@@ -62,11 +76,6 @@ public class JavascriptEngine {
             }
 
             result.values(outputValues);
-
-            if (mScript.startsWith("debugger;")) {
-                result.debugEnabled(true);
-                return result.build();
-            }
 
             cx.setLanguageVersion(Context.VERSION_1_8);
 
