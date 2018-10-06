@@ -27,7 +27,7 @@ public class JavascriptEngine {
     public JavascriptEngine(
             String scriptName, String script, String functionName, IQueryExecutor queryExecutor) {
         mScriptName = scriptName;
-        mScript = addStandardMethods(script);
+        mScript = script;
         mFunction = functionName;
         mQueryExecutor = queryExecutor;
     }
@@ -84,13 +84,13 @@ public class JavascriptEngine {
 
             //Now we can evaluate a script. Let's create a new object
             //using the object literal notation.
-            cx.evaluateString(scope, mScript,
+            cx.evaluateString(scope, addStandardMethods(mScript),
                     mScriptName + ": " + mFunction, 1, null);
 
             //pass output values in order to be modified by script
             //TODO maybe we should pass trigger too. Many times is useful to know what triggered the script
-            Object functionArgs[] = { outputValues };
-            Function function = (Function)scope.get(mFunction, scope);
+            Object functionArgs[] = {outputValues};
+            Function function = (Function) scope.get(mFunction, scope);
 
             Boolean apply = (Boolean) function.call(cx, scope, scope, functionArgs);
 
