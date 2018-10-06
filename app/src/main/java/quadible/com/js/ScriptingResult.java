@@ -10,24 +10,17 @@ public final class ScriptingResult {
 
     private final boolean applyValues;
 
-    private final boolean isDebugEnabled;
-
     private ScriptingResult(Builder builder) {
         mValues =  Collections.unmodifiableMap(builder.mValues);
         applyValues = builder.applyValues;
-        isDebugEnabled = builder.isDebugEnabled;
     }
 
     public Map<String, String> getValues() {
         return mValues;
     }
 
-    public boolean isApplyValues() {
+    public boolean applyValues() {
         return applyValues;
-    }
-
-    public boolean isDebugEnabled() {
-        return isDebugEnabled;
     }
 
     public static final class Builder {
@@ -35,8 +28,6 @@ public final class ScriptingResult {
         private HashMap<String, String> mValues = new HashMap<>();
 
         private boolean applyValues = false;
-
-        private boolean isDebugEnabled = false;
 
         public Builder values(HashMap<String, String> values) {
             mValues = values;
@@ -47,12 +38,7 @@ public final class ScriptingResult {
             applyValues = apply;
             return this;
         }
-
-        public Builder debugEnabled(boolean debugEnabled) {
-            isDebugEnabled = debugEnabled;
-            return this;
-        }
-
+        
         public ScriptingResult build() {
             return new ScriptingResult(this);
         }
