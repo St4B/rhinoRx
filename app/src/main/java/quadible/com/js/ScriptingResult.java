@@ -1,6 +1,5 @@
 package quadible.com.js;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,10 +33,6 @@ public final class ScriptingResult {
     public static final class Builder {
 
         private HashMap<String, String> mValues = new HashMap<>();
-
-        private ArrayList<String> mAlerts = new ArrayList<>();
-
-        private ArrayList<String> mDialogs = new ArrayList<>();
 
         private boolean applyValues = false;
 
