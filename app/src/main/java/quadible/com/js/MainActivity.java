@@ -17,28 +17,15 @@ public class MainActivity extends AppCompatActivity {
 
     private final ModelToArgumentsMapper mMapper = new ModelToArgumentsMapper();
 
-    private final String mScriptName = "MyScript";
-
-    private final String mScript =
-            "function HeaderPropertyChanged(header) {"
-            + "header.put('loco', 'modo');"
-            + "header.put('active', 'member');"
-            + "showDialog('koukou!');"
-            + "showDialog('Second', 'koukou!');"
-            + "showDialog('Third', 'koukou!', 'Ok');"
-            + "showDialog('Fourth', 'koukou!', 'Ok', 'Cancel');"
-            + "var data = query('select * from somewhere');"
-            + "header.put(data[0][0], data[0][1]); "
-            + "header.put(data[1][0], data[1][1]); "
-            + "return true;"
-            + "}";
-
-    private final String mFunctionName = "HeaderPropertyChanged";
-
     private final IQueryExecutor mQueryExecutor = new DummyRepository();
 
+    private final String mScriptName = "MyScript";
+
+    private final ScriptLoader mScriptLoader = new ScriptLoader();
+
     private final JavascriptEngine mEngine =
-            new JavascriptEngine(mScriptName, mScript, mFunctionName, mQueryExecutor);
+            new JavascriptEngine(
+                    mScriptName, mScriptLoader.load(mScriptName), ScriptLoader.sFunctionName, mQueryExecutor);
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
