@@ -1,10 +1,13 @@
 package quadible.com.js;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Arguments {
+public class Arguments implements Parcelable {
 
     private final String mTrigger;
 
@@ -15,12 +18,41 @@ public class Arguments {
         mValues = Collections.unmodifiableMap(builder.mValues);
     }
 
+    protected Arguments(Parcel in) {
+        mTrigger = in.readString();
+        mValues = Collections.unmodifiableMap(new HashMap<>()); //fixme
+    }
+
+    public static final Creator<Arguments> CREATOR = new Creator<Arguments>() {
+
+        @Override
+        public Arguments createFromParcel(Parcel in) {
+            return new Arguments(in);
+        }
+
+        @Override
+        public Arguments[] newArray(int size) {
+            return new Arguments[size];
+        }
+    };
+
     public String getTrigger() {
         return mTrigger;
     }
 
     public Map<String, String> getValues() {
         return mValues;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mTrigger);
+        //fixme mValues dest.writePersistableBundle();
     }
 
     public  static final class Builder {
