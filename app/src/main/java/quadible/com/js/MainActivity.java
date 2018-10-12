@@ -8,6 +8,8 @@ import android.widget.TextView;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,22 +22,38 @@ public class MainActivity extends AppCompatActivity {
 
     private final ScriptLoader mScriptLoader = new ScriptLoader();
 
+    private final JsDialogPublisher mJsDialogPublisher = new JsDialogPublisher();
+
     private final JavascriptEngine mEngine =
             new JavascriptEngine(
-                    mScriptName, mScriptLoader.load(mScriptName), ScriptLoader.sFunctionName, mQueryExecutor);
+                    mScriptName, mScriptLoader.load(mScriptName), ScriptLoader.sFunctionName, mQueryExecutor, mJsDialogPublisher);
+
+    private final CompositeDisposable mDisposable = new CompositeDisposable();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Observable<DialogDefinition> dialog = mJsDialogPublisher.observe()
+                .observeOn(AndroidSchedulers.mainThread());
+
+        Disposable disposable = dialog.subscribeWith(new JsDialogObserver());
+        mDisposable.add(disposable);
+
         Button trigger = findViewById(R.id.btnTrigger);
         trigger.setOnClickListener(view -> Observable.just(new Model.Builder().build())
                 .subscribeOn(Schedulers.newThread())
                 .map(mMapper::transform)
-                .flatMapSingle(arguments -> mEngine.execute(arguments, new JsDialogObserver()))
+                .flatMapSingle(mEngine::execute)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new MyObserver()));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mDisposable.dispose();
     }
 
     public class MyObserver extends JsExecutionObserver {

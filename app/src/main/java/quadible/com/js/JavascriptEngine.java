@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Set;
 
 import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.observers.DisposableObserver;
 
 public class JavascriptEngine {
 
@@ -24,42 +22,35 @@ public class JavascriptEngine {
 
     private final IQueryExecutor mQueryExecutor;
 
+    private final JsDialogPublisher mDialogPublisher;
+
     public JavascriptEngine(
-            String scriptName, String script, String functionName, IQueryExecutor queryExecutor) {
+            String scriptName, String script, String functionName, IQueryExecutor queryExecutor, JsDialogPublisher dialogPublisher) {
         mScriptName = scriptName;
         mScript = script;
         mFunction = functionName;
         mQueryExecutor = queryExecutor;
+        mDialogPublisher = dialogPublisher;
     }
 
-    public Single<ScriptingResult> execute(
-            Arguments arguments, DisposableObserver<DialogDefinition> dialogObserver) {
+    public Single<ScriptingResult> execute(Arguments arguments) {
         return Single.just(mScript)
                 .flatMap(script -> {
                     if (script.startsWith("debugger;")) {
                         return Single.error(
                                 new DebugNeededException(mScriptName, mScript, mFunction, arguments));
                     } else {
-                        return Single.fromCallable(() -> executeImp(arguments, dialogObserver));
+                        return Single.fromCallable(() -> executeImp(arguments));
                     }
                 });
     }
 
-    public Single<ScriptingResult> debug(
-            Arguments arguments, DisposableObserver<DialogDefinition> dialogObserver) {
-        return Single.fromCallable(() -> executeImp(arguments, dialogObserver));
+    public Single<ScriptingResult> debug(Arguments arguments) {
+        return Single.fromCallable(() -> executeImp(arguments));
     }
 
-    private ScriptingResult executeImp(
-            Arguments arguments, DisposableObserver<DialogDefinition> dialogObserver) {
+    private ScriptingResult executeImp(Arguments arguments) {
         Context cx = Context.enter();
-
-        JsDialogPublisher dialogPublisher = new JsDialogPublisher();
-
-        dialogPublisher.observe()
-                //TODO execute in background???
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(dialogObserver);
 
         try {
             //Init result object
@@ -89,8 +80,8 @@ public class JavascriptEngine {
 
             //Inject instances of java objects to our script in order to let them be used by it.
             injectJavaObject(cx, scope, "result", result);
-            injectJavaObject(cx, scope, "executor", mQueryExecutor);
-            injectJavaObject(cx, scope, "dialog", dialogPublisher);
+            injectJavaObject(cx, scope, "executor", mQueryExecutor); //fixme if null then??
+            injectJavaObject(cx, scope, "dialog", mDialogPublisher); //fixme if null then??
 
             //Now we can evaluate a script. Let's create a new object
             //using the object literal notation.
@@ -114,7 +105,6 @@ public class JavascriptEngine {
         } catch (EvaluatorException e) {
             throw new RuntimeException(e.details() + ": " + e.lineSource());
         } finally {
-            dialogPublisher.complete();
             Context.exit();
         }
     }

@@ -7,8 +7,8 @@ public class ScriptLoader {
     private final String mScriptName = "MyScript";
 
     private final String mScript =
-            "debugger;"
-                    + "function " + sFunctionName + "(model) {"
+          //  "debugger;"
+                     "function " + sFunctionName + "(model) {"
                     + "model.put('loco', 'modo');"
                     + "model.put('active', 'member');"
                     + "showDialog('koukou!');"

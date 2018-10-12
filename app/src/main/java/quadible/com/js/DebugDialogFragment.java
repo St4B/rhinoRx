@@ -12,8 +12,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.internal.operators.observable.ObservableBuffer;
 import io.reactivex.schedulers.Schedulers;
 
 public class DebugDialogFragment extends DialogFragment {
@@ -27,6 +27,8 @@ public class DebugDialogFragment extends DialogFragment {
     private static final String BUNDLE_KEY_METHOD = "method";
 
     private static final String BUNDLE_KEY_ARGUMENTS = "arguments";
+
+    private final JsDialogPublisher mJsDialogPublisher = new JsDialogPublisher();
 
     private final IQueryExecutor mQueryExecutor = new DummyRepository();
 
@@ -100,11 +102,11 @@ public class DebugDialogFragment extends DialogFragment {
     };
 
     private void execute(String script) {
-        ObservableBuffer.just(mArguments)
+        Observable.just(mArguments)
                 .subscribeOn(Schedulers.newThread())
                 .flatMapSingle(arguments ->
-                        new JavascriptEngine(mScriptName, script, mMethodName, mQueryExecutor)
-                                .debug(arguments, new JsDialogObserver()))
+                        new JavascriptEngine(mScriptName, script, mMethodName, mQueryExecutor, mJsDialogPublisher)
+                                .debug(arguments))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new DebugObserver());
     }
